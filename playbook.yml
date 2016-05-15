@@ -1,0 +1,6 @@
+---
+- include: prepare.yml
+- include: python.yml
+- include: opencv.yml
+- include: mkvirtualenv.yml
+

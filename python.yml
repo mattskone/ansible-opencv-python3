@@ -1,0 +1,50 @@
+---
+- hosts: all 
+  tasks:
+  - name: Check if temporary directory already exists
+    stat: path={{ download_dir }}
+    register: tmp
+
+  - name: Create temporary download directory
+    file: name={{ download_dir }} state=directory
+    when: tmp.stat.exists == false
+
+  - name: Download pip installer
+    get_url: url=https://bootstrap.pypa.io/get-pip.py dest={{ download_dir }}
+
+  - name: Get full path of download directory ("~" varies by user)
+    shell: pwd
+    args:
+      chdir: "{{ download_dir }}"
+    register: pwd_result 
+
+  - name: Install pip
+    become: true
+    command: python3 {{ pwd_result.stdout }}/get-pip.py
+
+  - name: Install virtualenv and virtualenvwrapper
+    become: true
+    command: pip3 install virtualenv virtualenvwrapper
+
+  - name: Install numpy
+    become: true
+    command: pip3 install numpy
+
+  - name: Remove temporary download directory, if it didn't prevously exist
+    file: name={{ download_dir }} state=absent
+    when: tmp.stat.exists == false
+
+  - name: Update .bash_profile with virtualenvwrapper
+    lineinfile:
+      backup=yes
+      create=true
+      dest=~/.bash_profile
+      insertafter=EOF
+      line={{ item }}
+      state=present
+    with_items:
+    - export VIRTUALENVWRAPPER_PYTHON=/usr/bin/python3
+    - export WORKON_HOME={{ virtualenv_home }}
+    - source /usr/local/bin/virtualenvwrapper.sh
+    - alias python=python3
+
