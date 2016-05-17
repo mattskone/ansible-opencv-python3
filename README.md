@@ -19,7 +19,7 @@ I wrote this [Ansible](https://www.ansible.com/) playbook in an effort to automa
 This playbook contains all the steps from [Adrian's blog post](http://www.pyimagesearch.com/2015/07/20/install-opencv-3-0-and-python-3-4-on-ubuntu/) to:
 
 1. Download OpenCV and its various dependencies.
-2. Compile and install OpenCV.
+2. Compile and install OpenCV.  (NOTE: OpenCV, and its dependency numpy, are install system-wide.  If you already have a system-wide installation of numpy, that's fine.)
 3. Install Python virtualenv and virtualenvwrapper, create a virtual environment, and make OpenCV available in that virtual environment.
 
 Some of the steps, especially cloning the OpenCV repository and compiling OpenCV, take quite a bit of time.  The whole playbook takes about 30 minutes to run on my 2-core Mac.
@@ -28,7 +28,29 @@ Some of the steps, especially cloning the OpenCV repository and compiling OpenCV
 Please verify the variables in the `group_vars/all` file have the values you want for your setup.  They are:
 
 1. `download_dir` - this is the path to the directory where any downloaded files will be placed during installation.  If the directory doesn't exist, it will be created before use, and removed when the installation is complete.
-2. `opencv_version` - this is the version of OpenCV that will be installed.  `3.1.0` is the current recent version.  This value can be a tag or a specific commit hash from the [OpenCV github project](https://github.com/Itseez/opencv).
+2. `opencv_version` - this is the version of OpenCV that will be installed.  `3.1.0` is the current version.  This value can be a tag or a specific commit hash from the [OpenCV github project](https://github.com/Itseez/opencv).
 3. `virtualenv_home` - this is the path to the directory where all of your virtual environments will be stored.
 4. `virtualenv_name` - this is the name of the virtual environment that will be created for you, with OpenCV available in it.
 
+### A note about virtual environments
+Virtual environments are a Python best-practice technique for preventing dependency conflicts while developing multiple Python projects on the same machine.  If you're unfamiliar with them, [this guide](http://docs.python-guide.org/en/latest/dev/virtualenvs/) provides good coverage of the rationale and basic usage.
+
+#### How do I use OpenCV in my new virtual environement?
+Assuming the value of `virtualenv_home` is `cv`, just use
+
+`$ workon cv`
+
+to activate your virtual environment.  OpenCV will be available to your Python code with  `import cv2`.  Any other Python packages you install using `pip` while your virtual environment is active will only be installed in your virtual environment, and not system-wide.
+
+When you want to exit your virtual environment, just use
+
+`$ deactivate`
+
+#### What if I don't want to use virtual environments?
+No problem - you don't have to.  Since OpenCV is installed system-wide, it is available in your Python code with `import cv2` whether or not you are inside an active virtual environment.
+
+### Contributions
+I'm pretty new at Ansible.  If there's a smarter way to do any of this, please send me a pull request with an explanation of your propsed change.  If something doesn't work, please create a github issue against this project including specific steps to reproduce the problem.
+
+### License
+Use of this software is governed by the included MIT license.
