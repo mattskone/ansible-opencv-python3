@@ -49,6 +49,13 @@ When you want to exit your virtual environment, just use
 #### What if I don't want to use virtual environments?
 No problem - you don't have to.  Since OpenCV is installed system-wide, it is available in your Python code with `import cv2` whether or not you are inside an active virtual environment.
 
+### Using Vagrant
+If you have [Vagrant](https://www.vagrantup.com/) installed (or if you install it), you can optionally spin up a vagrant virtual machine and run this playbook inside it.  Just run
+
+`$ vagrant up`
+
+and vagrant will create and provision the virtual machine with OpenCV installed.
+
 ### Contributions
 I'm pretty new at Ansible.  If there's a smarter way to do any of this, please send me a pull request with an explanation of your propsed change.  If something doesn't work, please create a github issue against this project including specific steps to reproduce the problem.
 
