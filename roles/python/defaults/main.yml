@@ -1,0 +1,4 @@
+---
+download_dir: ~/downloads
+virtualenv_home: ~/.virtualenvs
+

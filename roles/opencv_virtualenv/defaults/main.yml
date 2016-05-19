@@ -1,0 +1,4 @@
+---
+virtualenv_home: ~/.virtualenvs
+virtualenv_name: cv
+

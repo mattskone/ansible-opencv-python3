@@ -1,6 +1,4 @@
 ---
 download_dir: ~/downloads
 opencv_version: 3.1.0
-virtualenv_home: ~/.virtualenvs
-virtualenv_name: cv
 
