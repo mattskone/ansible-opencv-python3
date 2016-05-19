@@ -6,7 +6,8 @@
     virtualenv_home: ~/.virtualenvs
     virtualenv_name: cv
   roles:
-    - update
+    - upgrade 
     - python
     - opencv
+    - opencv_virtualenv
 
