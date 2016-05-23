@@ -1,79 +1,76 @@
 ---
-- hosts: all 
-  become: true
-  tasks:
-  - name: Install developer and compile tools
-    apt: name={{ item }} state=present
-    with_items:
-    - build-essential
-    - cmake
-    - git
-    - pkg-config
+- name: Install developer and compile tools
+  apt: name={{ item }} state=present
+  with_items:
+  - build-essential
+  - cmake
+  - git
+  - pkg-config
 
-  - name: Install libraries for various image formats
-    apt: name={{ item }} state=present
-    with_items:
-    - libjpeg8-dev
-    - libtiff4-dev
-    - libjasper-dev
-    - libpng12-dev
+- name: Install libraries for various image formats
+  apt: name={{ item }} state=present
+  with_items:
+  - libjpeg8-dev
+  - libtiff4-dev
+  - libjasper-dev
+  - libpng12-dev
 
-  - name: Install libraries for various video formats
-    apt: name={{ item }} state=present
-    with_items:
-    - libavcodec-dev
-    - libavformat-dev
-    - libswscale-dev
-    - libv4l-dev
+- name: Install libraries for various video formats
+  apt: name={{ item }} state=present
+  with_items:
+  - libavcodec-dev
+  - libavformat-dev
+  - libswscale-dev
+  - libv4l-dev
 
-  - name: Install GTK for OpenCV GUI
-    apt: name=libgtk2.0-dev state=present
+- name: Install GTK for OpenCV GUI
+  apt: name=libgtk2.0-dev state=present
 
-  - name: Install packages used for optimization in OpenCV
-    apt: name={{ item }}
-    with_items:
-    - libatlas-base-dev
-    - gfortran
+- name: Install packages used for optimization in OpenCV
+  apt: name={{ item }}
+  with_items:
+  - libatlas-base-dev
+  - gfortran
 
-  - name: Install Python3 headers and development files
-    apt: name=python3.4-dev state=present
+- name: Install Python3 headers and development files
+  apt: name=python3.4-dev state=present
 
-  - name: Check if temporary directory already exists
-    stat: path={{ download_dir }}
-    register: tmp
+- name: Check if temporary directory already exists
+  stat: path={{ download_dir }}
+  register: tmp
 
-  - name: Create temporary download directory
-    file: name={{ download_dir }} state=directory
-    when: tmp.stat.exists == false
+- name: Create temporary download directory
+  file: name={{ download_dir }} state=directory
+  when: tmp.stat.exists == false
 
-  - name: Git clone opencv
-    git: repo=https://github.com/Itseez/opencv.git dest={{ download_dir }}/opencv version={{ opencv_version }}
+- name: Git clone opencv
+  git: repo=https://github.com/Itseez/opencv.git dest={{ download_dir }}/opencv version={{ opencv_version }}
 
-  - name: Git clone opencv_contrib
-    git: repo=https://github.com/Itseez/opencv_contrib.git dest={{ download_dir }}/opencv_contrib version={{ opencv_version }}
+- name: Git clone opencv_contrib
+  git: repo=https://github.com/Itseez/opencv_contrib.git dest={{ download_dir }}/opencv_contrib version={{ opencv_version }}
 
-  - name: Create build directory
-    file: name={{ download_dir }}/opencv/build state=directory
+- name: Create build directory
+  file: name={{ download_dir }}/opencv/build state=directory
 
-  - name: Make the opencv build artifacts
-    command: cmake -D CMAKE_BUILD_TYPE=RELEASE -D CMAKE_INSTALL_PREFIX=/usr/local -D INSTALL_C_EXAMPLES=OFF -D INSTALL_PYTHON_EXAMPLES=ON -D OPENCV_EXTRA_MODULES_PATH={{ download_dir }}/opencv_contrib/modules -D BUILD_EXAMPLES=ON ..
-    args:
-      chdir: "{{ download_dir }}/opencv/build"
+- name: Make the opencv build artifacts
+  command: cmake -D CMAKE_BUILD_TYPE=RELEASE -D CMAKE_INSTALL_PREFIX=/usr/local -D INSTALL_C_EXAMPLES=OFF -D INSTALL_PYTHON_EXAMPLES=ON -D OPENCV_EXTRA_MODULES_PATH={{ download_dir }}/opencv_contrib/modules -D BUILD_EXAMPLES=ON ..
+  args:
+    chdir: "{{ download_dir }}/opencv/build"
 
-  - name: Compile opencv
-    command: make -j2
-    args:
-      chdir: "{{ download_dir }}/opencv/build"
+- name: Compile opencv
+  command: make -j2
+  args:
+    chdir: "{{ download_dir }}/opencv/build"
 
-  - name: Install opencv
-    command: "{{ item }}"
-    with_items:
-      - make install
-      - ldconfig
-    args:
-      chdir: "{{ download_dir }}/opencv/build"
+- name: Install opencv
+  command: "{{ item }}"
+  with_items:
+    - make install
+    - ldconfig
+  args:
+    chdir: "{{ download_dir }}/opencv/build"
 
-  - name: Remove temporary download directory, if it didn't prevously exist
-    file: name={{ download_dir }} state=absent
-    when: tmp.stat.exists == false
+- name: Remove temporary download directory, if it didn't prevously exist
+  file: name={{ download_dir }} state=absent
+  when: tmp.stat.exists == false
 

@@ -8,6 +8,6 @@
   roles:
     - upgrade 
     - python
-    - opencv
+    - { role: opencv, become: true }
     - opencv_virtualenv
 

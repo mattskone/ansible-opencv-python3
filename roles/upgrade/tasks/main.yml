@@ -1,7 +1,5 @@
 ---
-- hosts: all 
+- name: Update and upgrade
   become: true
-  tasks:
-  - name: Update and upgrade
-    apt: update-cache=yes upgrade=dist
+  apt: update-cache=yes upgrade=dist
 

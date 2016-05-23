@@ -1,11 +1,9 @@
 ---
-- hosts: all 
-  tasks:
-  - name: Create a new Python virtual environment
-    shell: source ~/.bash_profile && mkvirtualenv {{ virtualenv_name }}
-    args:
-      executable: /bin/bash
+- name: Create a new Python virtual environment
+  shell: source ~/.bash_profile && mkvirtualenv {{ virtualenv_name }}
+  args:
+    executable: /bin/bash
 
-  - name: Symlink opencv to virtualenv
-    file: path={{ virtualenv_home }}/{{ virtualenv_name }}/lib/python3.4/site-packages/cv2.so src=/usr/local/lib/python3.4/dist-packages/cv2.cpython-34m.so state=link
+- name: Symlink opencv to virtualenv
+  file: path={{ virtualenv_home }}/{{ virtualenv_name }}/lib/python3.4/site-packages/cv2.so src=/usr/local/lib/python3.4/dist-packages/cv2.cpython-34m.so state=link
 
