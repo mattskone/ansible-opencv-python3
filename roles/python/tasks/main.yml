@@ -20,23 +20,22 @@
   become: true
   command: python3 {{ pwd_result.stdout }}/get-pip.py
 
-- name: Install virtualenv and virtualenvwrapper
-  become: true
-  command: pip3 install virtualenv virtualenvwrapper
-
-- name: Install numpy
-  become: true
-  command: pip3 install numpy
-
 - name: Remove temporary download directory, if it didn't prevously exist
   file: name={{ download_dir }} state=absent
   when: tmp.stat.exists == false
 
-- name: Update .bash_profile with virtualenvwrapper
+- name: Install virtualenv and virtualenvwrapper
+  become: true
+  pip: name={{ item }} executable=pip3
+  with_items:
+  - virtualenv
+  - virtualenvwrapper
+
+- name: Update .bashrc with virtualenvwrapper
   lineinfile:
     backup=yes
     create=true
-    dest=~/.bash_profile
+    dest=~/.bashrc
     insertafter=EOF
     line={{ item }}
     state=present
@@ -44,5 +43,14 @@
   - export VIRTUALENVWRAPPER_PYTHON=/usr/bin/python3
   - export WORKON_HOME={{ virtualenv_home }}
   - source /usr/local/bin/virtualenvwrapper.sh
-  - alias python=python3
+
+- name: Create a new Python virtual environment
+  shell: |
+    source /usr/local/bin/virtualenvwrapper.sh
+    mkvirtualenv {{ virtualenv_name }}
+  args:
+    executable: /bin/bash
+
+- name: Install numpy
+  command: "{{ virtualenv_home }}/{{ virtualenv_name}}/bin/pip install numpy"
 

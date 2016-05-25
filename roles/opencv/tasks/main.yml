@@ -1,5 +1,6 @@
 ---
 - name: Install developer and compile tools
+  become: true
   apt: name={{ item }} state=present
   with_items:
   - build-essential
@@ -8,6 +9,7 @@
   - pkg-config
 
 - name: Install libraries for various image formats
+  become: true
   apt: name={{ item }} state=present
   with_items:
   - libjpeg8-dev
@@ -16,6 +18,7 @@
   - libpng12-dev
 
 - name: Install libraries for various video formats
+  become: true
   apt: name={{ item }} state=present
   with_items:
   - libavcodec-dev
@@ -24,16 +27,23 @@
   - libv4l-dev
 
 - name: Install GTK for OpenCV GUI
+  become: true
   apt: name=libgtk2.0-dev state=present
 
 - name: Install packages used for optimization in OpenCV
+  become: true
   apt: name={{ item }}
   with_items:
   - libatlas-base-dev
   - gfortran
 
 - name: Install Python3 headers and development files
-  apt: name=python3.4-dev state=present
+  become: true
+  apt: name=python3.4-dev
+
+- name: Install unzip
+  become: true
+  apt: name=unzip
 
 - name: Check if temporary directory already exists
   stat: path={{ download_dir }}
@@ -43,34 +53,54 @@
   file: name={{ download_dir }} state=directory
   when: tmp.stat.exists == false
 
-- name: Git clone opencv
-  git: repo=https://github.com/Itseez/opencv.git dest={{ download_dir }}/opencv version={{ opencv_version }}
+- name: Download and unzip opencv
+  unarchive: src=https://github.com/Itseez/opencv/archive/{{ opencv_version }}.zip dest={{ download_dir }} copy=no
 
-- name: Git clone opencv_contrib
-  git: repo=https://github.com/Itseez/opencv_contrib.git dest={{ download_dir }}/opencv_contrib version={{ opencv_version }}
+- name: Download and unzip opencv_contrib
+  unarchive: src=https://github.com/Itseez/opencv_contrib/archive/{{ opencv_version }}.zip dest={{ download_dir }} copy=no
 
 - name: Create build directory
-  file: name={{ download_dir }}/opencv/build state=directory
+  file: name={{ download_dir }}/opencv-{{ opencv_version }}/build state=directory
 
 - name: Make the opencv build artifacts
-  command: cmake -D CMAKE_BUILD_TYPE=RELEASE -D CMAKE_INSTALL_PREFIX=/usr/local -D INSTALL_C_EXAMPLES=OFF -D INSTALL_PYTHON_EXAMPLES=ON -D OPENCV_EXTRA_MODULES_PATH={{ download_dir }}/opencv_contrib/modules -D BUILD_EXAMPLES=ON ..
+  shell: |
+    source /usr/local/bin/virtualenvwrapper.sh
+    workon {{ virtualenv_name }}
+    cmake -D CMAKE_BUILD_TYPE=RELEASE -D CMAKE_INSTALL_PREFIX=/usr/local -D INSTALL_C_EXAMPLES=OFF -D INSTALL_PYTHON_EXAMPLES=ON -D OPENCV_EXTRA_MODULES_PATH={{ download_dir }}/opencv_contrib-{{ opencv_version }}/modules -D BUILD_EXAMPLES=ON ..
   args:
-    chdir: "{{ download_dir }}/opencv/build"
+    chdir: "{{ download_dir }}/opencv-{{ opencv_version }}/build"
+    executable: /bin/bash
 
 - name: Compile opencv
-  command: make -j2
+  shell: |
+    source /usr/local/bin/virtualenvwrapper.sh
+    workon {{ virtualenv_name }}
+    make -j2
   args:
-    chdir: "{{ download_dir }}/opencv/build"
+    chdir: "{{ download_dir }}/opencv-{{ opencv_version }}/build"
+    executable: /bin/bash
+
+- name: Get full path of download directory ("~" varies by user)
+  shell: pwd
+  args:
+    chdir: "{{ download_dir }}"
+  register: pwd_result
 
 - name: Install opencv
-  command: "{{ item }}"
-  with_items:
-    - make install
-    - ldconfig
+  become: true
+  shell: |
+    source /usr/local/bin/virtualenvwrapper.sh
+    workon {{ virtualenv_name }}
+    make install
+    ldconfig
   args:
-    chdir: "{{ download_dir }}/opencv/build"
+    chdir: "{{ pwd_result.stdout }}/opencv-{{ opencv_version }}/build"
+    executable: /bin/bash
 
 - name: Remove temporary download directory, if it didn't prevously exist
   file: name={{ download_dir }} state=absent
   when: tmp.stat.exists == false
+
+- name: Symlink opencv to virtualenv
+  file: path={{ virtualenv_home }}/{{ virtualenv_name }}/lib/python3.4/site-packages/cv2.so src=/usr/local/lib/python3.4/site-packages/cv2.cpython-34m.so state=link
 

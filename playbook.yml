@@ -5,9 +5,11 @@
     opencv_version: 3.1.0
     virtualenv_home: ~/.virtualenvs
     virtualenv_name: cv
+  environment:
+    VIRTUALENVWRAPPER_PYTHON: /usr/bin/python3
+    WORKON_HOME: "{{ virtualenv_home }}"
   roles:
     - upgrade 
     - python
-    - { role: opencv, become: true }
-    - opencv_virtualenv
+    - opencv
 
