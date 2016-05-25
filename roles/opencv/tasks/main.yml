@@ -75,7 +75,7 @@
   shell: |
     source /usr/local/bin/virtualenvwrapper.sh
     workon {{ virtualenv_name }}
-    make -j2
+    make -j{{ num_processors }}
   args:
     chdir: "{{ download_dir }}/opencv-{{ opencv_version }}/build"
     executable: /bin/bash
